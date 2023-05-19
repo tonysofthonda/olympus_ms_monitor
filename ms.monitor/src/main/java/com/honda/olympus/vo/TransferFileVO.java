@@ -1,33 +1,18 @@
 package com.honda.olympus.vo;
 
-public class MessageVO {
-
-	private String source;
-
+public class TransferFileVO {
+	
 	private Long status;
 
 	private String msg;
 
 	private String file;
 
-	public MessageVO() {
+	public TransferFileVO(Long status, String msg, String file) {
 		super();
-	}
-
-	public MessageVO(String source, Long status, String msg, String file) {
-		super();
-		this.source = source;
 		this.status = status;
 		this.msg = msg;
 		this.file = file;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public void setSource(String source) {
-		this.source = source;
 	}
 
 	public Long getStatus() {
@@ -53,7 +38,9 @@ public class MessageVO {
 	public void setFile(String file) {
 		this.file = file;
 	}
-
+	
+	
+	
 	
 
 }
