@@ -15,7 +15,7 @@ public class MonitorScheduller {
 	MonitorService monitorService;
 
 	@Scheduled(fixedDelay = 10000)
-	public void scheduleFixedDelayTask() {
+	public void monitorScheduledTask() {
 		System.out.println("Monitor Scheduller running - " + System.currentTimeMillis() / 1000);
 
 		try {

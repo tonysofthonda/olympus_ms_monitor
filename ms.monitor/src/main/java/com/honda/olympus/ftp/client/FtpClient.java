@@ -10,31 +10,39 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component
 public class FtpClient {
 
-	@Value("${mftp.credentials.host}")
 	private String server;
 
-	@Value("${mftp.credentials.port}")
 	private Integer port;
 
-	@Value("${mftp.credentials.user}")
 	private String user;
 
-	@Value("${mftp.credentials.pass}")
 	private String password;
-	
-	@Value("${monitor.workdir.inbound}")
+
 	private String workDir;
 
 	private FTPClient ftp;
 
+	public FtpClient(String server, Integer port, String user, String password, String workDir) {
+		super();
+		this.server = server;
+		this.port = port;
+		this.user = user;
+		this.password = password;
+		this.workDir = workDir;
+	}
+
 	public void open() throws IOException {
 		ftp = new FTPClient();
+
+		System.out.println("Connection FTP server: " + server);
+		
+		System.out.println("port: " + port);
+		System.out.println("user: " + user);
+		System.out.println("workDir: " + workDir);
 
 		ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
