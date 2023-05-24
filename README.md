@@ -54,12 +54,26 @@ Running the tests
 
 ### 1. Service Health check endpoint
 #### Request
+`GET /olympus/monitor/v1/health`
+
+    curl -i -X GET -H http://{server-domain|ip}/olympus/monitor/health
+
+#### Response
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Transfer-Encoding: chunked
+    Date: Mon, 22 May 2023 05:00:55 GMT
+    
+   Honda Olympus [name: ms.monitor] [version: 1.0.2] [profile: dev] 2023-05-22T05:00:55 America/Mexico_City
+
+### 2. Manually run service once
+#### Request
 `POST /olympus/logevent/v1/event`
 
     curl -i -X POST -H 'Content-Type: application/json' -d '{"source": , "status": "X", "msg": "Succes process", "file": "fexampleFile.txt"}' http://{server-domain|ip}/olympus/monitor/health
 
 #### Response
-    HTTP/1.1 400
+    HTTP/1.1 200 OK
     Content-Type: application/json
     Transfer-Encoding: chunked
     Date: Mon, 15 May 2023 05:00:55 GMT
@@ -71,4 +85,3 @@ Running the tests
             "source is mandatory"
         ]
     }
-
