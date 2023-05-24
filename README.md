@@ -70,7 +70,7 @@ Running the tests
 #### Request
 `POST /olympus/logevent/v1/event`
 
-    curl -i -X POST -H 'Content-Type: application/json' -d '{"source": , "status": "X", "msg": "Succes process", "file": "fexampleFile.txt"}' http://{server-domain|ip}/olympus/monitor/health
+    curl -i -X POST -H 'Content-Type: application/json'  http://{server-domain|ip}/olympus/monitor/v1/event
 
 #### Response
     HTTP/1.1 200 OK
@@ -79,9 +79,22 @@ Running the tests
     Date: Mon, 15 May 2023 05:00:55 GMT
     
     {
-        "timestamp": "2023-05-17T12:25:28.062-05:00",
-        "status": 400,
-        "errors": [
-            "source is mandatory"
-        ]
+    "message": "Monitor check successfully",
+    "details": 
     }
+    
+    
+    
+#### Server Logs output:
+    
+227 Entering Passive Mode (172,31,17,4,4,12).
+LIST /ms.transferfile/inbound
+150 Here comes the directory listing.
+226 Directory send OK.
+First file: -rw-------    1 1006     1006            0 May 24 17:58 empty-file1.txt
+Calling logEvent service
+EventVO [source=ms.monitor, status=2, msg=SUCCESS, file=]
+LogEvent created with Status Code: 200 OK
+Message: OK
+Calling transferFile service
+TransferFileVO [status=1, msg=SUCCESS, file=empty-file1.txt]
