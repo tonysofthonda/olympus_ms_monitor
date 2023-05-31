@@ -9,6 +9,11 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.honda.olympus.service.LogEventService;
+import com.honda.olympus.utils.MonitorConstants;
+import com.honda.olympus.vo.EventVO;
 
 public class FtpClient {
 
@@ -23,7 +28,7 @@ public class FtpClient {
 	private String workDir;
 
 	private FTPClient ftp;
-
+	
 	public FtpClient(String server, Integer port, String user, String password, String workDir) {
 		super();
 		this.server = server;
@@ -33,19 +38,20 @@ public class FtpClient {
 		this.workDir = workDir;
 	}
 
-	public void open() throws IOException {
+	public void connect() throws IOException {
 		ftp = new FTPClient();
 
+		
 		System.out.println("Connection FTP server: " + server);
 
-		System.out.println("port: " + port);
-		System.out.println("user: " + user);
+		// System.out.println("port: " + port);
+		// System.out.println("user: " + user);
 		System.out.println("workDir: " + workDir);
 
 		ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
-		// ftp.connect(server, port);
-		ftp.connect(server);
+		ftp.connect(server, port);
+		// ftp.connect(server);
 
 		int reply = ftp.getReplyCode();
 		if (!FTPReply.isPositiveCompletion(reply)) {
@@ -61,29 +67,42 @@ public class FtpClient {
 
 	public boolean listFiles() throws IOException {
 		FTPFile[] files = ftp.listFiles(workDir);
-		
-		if(files.length != 0) {
+
+		if (files.length != 0) {
 
 			Arrays.stream(files).forEach(f -> System.out.println("Files: " + f.getName()));
 			return Boolean.TRUE;
-			
-		}else {
+
+		} else {
 			return Boolean.FALSE;
 		}
 	}
 
-	public FTPFile listFirstFile() throws IOException {
+	public boolean listDirectories() throws IOException {
+		FTPFile[] files = ftp.listDirectories("/");
+
+		if (files.length != 0) {
+
+			Arrays.stream(files).forEach(f -> System.out.println("Directories: " + f.getName()));
+			return Boolean.TRUE;
+
+		} else {
+			return Boolean.FALSE;
+		}
+	}
+
+	public FTPFile listFirstFile(String serviceName) throws IOException {
 		FTPFile[] files = ftp.listFiles(workDir);
 
 		Optional<FTPFile> ftpFile = Arrays.stream(files).findFirst();
 
+		
 		if (ftpFile.isPresent()) {
-			System.out.println("Type: " + ftpFile.get().getType());
-			
 			return ftpFile.get();
 		} else {
+			
 			return null;
-		}
+		}  
 
 	}
 

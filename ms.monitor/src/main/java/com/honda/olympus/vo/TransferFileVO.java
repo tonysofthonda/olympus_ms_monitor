@@ -38,6 +38,11 @@ public class TransferFileVO {
 	public void setFile(String file) {
 		this.file = file;
 	}
+
+	@Override
+	public String toString() {
+		return "TransferFileVO [status=" + status + ", msg=" + msg + ", file=" + file + "]";
+	}
 	
 	
 	

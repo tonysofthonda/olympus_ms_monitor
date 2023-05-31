@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +22,16 @@ import com.honda.olympus.vo.ResponseVO;
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
+	@Value("${service.name}")
+	private String serviceName;
+	
 	@ExceptionHandler(Exception.class)
 	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
 
 		List<String> details = new ArrayList<>();
 
 		details.add(ex.getLocalizedMessage());
-		ResponseVO error = new ResponseVO("server error", details);
+		ResponseVO error = new ResponseVO(serviceName,0L,ex.getMessage(), "");
 
 		return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
@@ -54,7 +58,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 		List<String> details = new ArrayList<>();
 		
 		details.add(ex.getLocalizedMessage());
-		ResponseVO error = new ResponseVO("server error", details);
+		ResponseVO error = new ResponseVO(serviceName, 0L,ex.getMessage(), "");
 		
 		return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
 	}
