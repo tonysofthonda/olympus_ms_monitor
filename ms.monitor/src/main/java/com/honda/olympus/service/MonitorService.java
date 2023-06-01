@@ -14,6 +14,9 @@ import com.honda.olympus.vo.EventVO;
 import com.honda.olympus.vo.MessageVO;
 import com.honda.olympus.vo.TransferFileVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class MonitorService {
 
@@ -67,7 +70,8 @@ public class MonitorService {
 
 				FTPFile ftpFile = ftpClient.listFirstFile(serviceName);
 
-				System.out.println("First file: " + ftpClient.listFirstFile(serviceName));
+			
+				log.info("First file: {}",ftpClient.listFirstFile(serviceName));
 
 				if (ftpFile != null) {
 					event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "SUCCESS", ftpFile.getName());
@@ -79,7 +83,7 @@ public class MonitorService {
 				}
 			} else {
 
-				System.out.println("End second altern flow, empty directory");
+				log.info("End second altern flow, empty directory");
 				event = new EventVO(serviceName, MonitorConstants.THREE_STATUS, "No existen archivos para procesar", "");
 				logEventService.sendLogEvent(event);
 
@@ -87,7 +91,7 @@ public class MonitorService {
 
 		} catch (IOException e) {
 
-			System.out.println("End first cancel/change altern flow");
+			log.info("End first cancel/change altern flow");
 			event = new EventVO(serviceName, MonitorConstants.ZERO_STATUS, "Fallo en la conexión al MFTP: " + host, "");
 			logEventService.sendLogEvent(event);
 

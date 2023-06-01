@@ -11,6 +11,9 @@ import org.springframework.web.client.RestTemplate;
 import com.honda.olympus.vo.MessageVO;
 import com.honda.olympus.vo.ResponseVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class NotificationService {
 
@@ -29,11 +32,11 @@ public class NotificationService {
 			ResponseEntity<ResponseVO> responseEntity = restTemplate.postForEntity(notificationURI, requestEntity,
 					ResponseVO.class);
 
-			System.out.println("Notification sent with Status Code: " + responseEntity.getStatusCode());
-			System.out.println("Message: " + responseEntity.getBody().getMessage());
+			log.info("Notification sent with Status Code: {}",responseEntity.getStatusCode());
+			log.info("Message: {}",responseEntity.getBody().getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("Error calling Notification service");
+			log.info("Error calling Notification service");
 		}
 
 	}

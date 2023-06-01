@@ -14,6 +14,9 @@ import com.honda.olympus.exception.MonitorException;
 import com.honda.olympus.service.MonitorService;
 import com.honda.olympus.vo.ResponseVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 public class MonitorController {
 	@Value("${service.success.message}")
@@ -33,10 +36,15 @@ public class MonitorController {
 
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseVO> monitorFiles() throws MonitorException, IOException {
-		System.out.println(responseMessage);
+		
+		try {
+		log.info("Calling FORCE monitor event:: start");
 
 		monitorService.checkFiles();
 
+		}catch(Exception e) {
+		 e.printStackTrace();  
+		}
 		return new ResponseEntity<>(new ResponseVO(serviceName, 1L, responseMessage, ""), HttpStatus.OK);
 	}
 

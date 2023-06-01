@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.honda.olympus.vo.TransferFileVO;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 @Service
 public class TransferFileService {
 
@@ -18,8 +20,8 @@ public class TransferFileService {
 
 	public void sendTransferFileEvent(TransferFileVO message) {
 		try {
-			System.out.println("Calling transferFile service");
-			System.out.println(message.toString());
+			log.info("Calling transferFile service");
+			log.info(message.toString());
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -30,10 +32,10 @@ public class TransferFileService {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(transferFileURI, requestEntity,
 					String.class);
 
-			System.out.println("TRnasfer file called with Status Code: " + responseEntity.getStatusCode());
-			System.out.println("Message: " + responseEntity.getBody());
+			log.info("TRnasfer file called with Status Code: {}",responseEntity.getStatusCode());
+			log.info("Message: " + responseEntity.getBody());
 		} catch (Exception e) {
-			System.out.println("Error calling transferFile service " + e.getLocalizedMessage());
+			log.info("Error calling transferFile service {}",e.getLocalizedMessage());
 		}
 
 	}

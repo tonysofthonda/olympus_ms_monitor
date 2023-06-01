@@ -9,12 +9,10 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.honda.olympus.service.LogEventService;
-import com.honda.olympus.utils.MonitorConstants;
-import com.honda.olympus.vo.EventVO;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FtpClient {
 
 	private String server;
@@ -28,7 +26,7 @@ public class FtpClient {
 	private String workDir;
 
 	private FTPClient ftp;
-	
+
 	public FtpClient(String server, Integer port, String user, String password, String workDir) {
 		super();
 		this.server = server;
@@ -41,12 +39,11 @@ public class FtpClient {
 	public void connect() throws IOException {
 		ftp = new FTPClient();
 
-		
-		System.out.println("Connection FTP server: " + server);
+		log.info("Connection FTP server: {}", server);
 
-		// System.out.println("port: " + port);
-		// System.out.println("user: " + user);
-		System.out.println("workDir: " + workDir);
+		// log.info("port: " + port);
+		// log.info("user: " + user);
+		log.info("workDir: {}", workDir);
 
 		ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
@@ -70,7 +67,7 @@ public class FtpClient {
 
 		if (files.length != 0) {
 
-			Arrays.stream(files).forEach(f -> System.out.println("Files: " + f.getName()));
+			Arrays.stream(files).forEach(f -> log.info("Files: {}", f.getName()));
 			return Boolean.TRUE;
 
 		} else {
@@ -83,7 +80,7 @@ public class FtpClient {
 
 		if (files.length != 0) {
 
-			Arrays.stream(files).forEach(f -> System.out.println("Directories: " + f.getName()));
+			Arrays.stream(files).forEach(f -> log.info("Directories: {}", f.getName()));
 			return Boolean.TRUE;
 
 		} else {
@@ -96,13 +93,12 @@ public class FtpClient {
 
 		Optional<FTPFile> ftpFile = Arrays.stream(files).findFirst();
 
-		
 		if (ftpFile.isPresent()) {
 			return ftpFile.get();
 		} else {
-			
+
 			return null;
-		}  
+		}
 
 	}
 

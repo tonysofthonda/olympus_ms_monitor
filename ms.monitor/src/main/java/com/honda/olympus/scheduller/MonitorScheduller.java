@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 import com.honda.olympus.exception.MonitorException;
 import com.honda.olympus.service.MonitorService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class MonitorScheduller {
 
@@ -22,21 +25,20 @@ public class MonitorScheduller {
 
 	@Scheduled(fixedDelayString = "${monitor.timelapse}")
 	public void monitorScheduledTask() throws IOException {
-		System.out.println("Monitor Scheduller running - " + System.currentTimeMillis() / 1000);
+		log.info("Monitor Scheduller running - {}",System.currentTimeMillis() / 1000);
 
 		try {
-			System.out.println("Monitor files:: start");
+			log.info("Monitor files:: start");
 			Long startTime = System.nanoTime();
 			monitorService.checkFiles();
 			Long endTime = System.nanoTime();
 			Long timeElapsed = endTime - startTime;
 			
-			System.out.println();
-			System.out.println("Monitor files:: end / Execution time in milliseconds: " + timeElapsed / 1000000);
+			log.info("Monitor files:: end / Execution time in milliseconds: {}",timeElapsed / 1000000);
 			
 			Date expireDate = new Date(System.currentTimeMillis() + timeLapse);
 			
-			System.out.println("Next execution at: "+expireDate.toString());
+			log.info("Next monitor service execution at: {}",expireDate.toString());
 		} catch (MonitorException e) {
 
 			e.printStackTrace();
