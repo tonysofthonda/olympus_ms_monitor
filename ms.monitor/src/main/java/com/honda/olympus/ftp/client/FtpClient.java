@@ -39,13 +39,13 @@ public class FtpClient {
 	public void connect() throws IOException {
 		ftp = new FTPClient();
 
-		log.info("Connection FTP server: {}", server);
+		log.debug("Connection FTP server: {}", server);
 
 		// log.info("port: " + port);
 		// log.info("user: " + user);
-		log.info("workDir: {}", workDir);
+		log.debug("workDir: {}", workDir);
 
-		ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
+		//ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
 		ftp.connect(server, port);
 		// ftp.connect(server);

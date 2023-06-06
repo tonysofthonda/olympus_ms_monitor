@@ -61,6 +61,7 @@ public class MonitorService {
 
 			ftpClient.connect();
 
+			log.info("Monitor:: Conexión exitosa al MFTP: {}", host);
 			event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "Conexión al MFTP: " + host, " fué exitosa");
 			logEventService.sendLogEvent(event);
 
@@ -71,9 +72,10 @@ public class MonitorService {
 				FTPFile ftpFile = ftpClient.listFirstFile(serviceName);
 
 			
-				log.info("First file: {}",ftpClient.listFirstFile(serviceName));
+				log.debug("First file: {}",ftpClient.listFirstFile(serviceName));
 
 				if (ftpFile != null) {
+					log.info("Monitor:: Existe archivo en MFTP");
 					event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "SUCCESS", ftpFile.getName());
 					logEventService.sendLogEvent(event);
 
@@ -83,7 +85,7 @@ public class MonitorService {
 				}
 			} else {
 
-				log.info("End second altern flow, empty directory");
+				log.info("No existen archivos para procesar");
 				event = new EventVO(serviceName, MonitorConstants.THREE_STATUS, "No existen archivos para procesar", "");
 				logEventService.sendLogEvent(event);
 
@@ -91,7 +93,7 @@ public class MonitorService {
 
 		} catch (IOException e) {
 
-			log.info("End first cancel/change altern flow");
+			log.info("Fallo en la conexión al MFTP: {}",host);
 			event = new EventVO(serviceName, MonitorConstants.ZERO_STATUS, "Fallo en la conexión al MFTP: " + host, "");
 			logEventService.sendLogEvent(event);
 

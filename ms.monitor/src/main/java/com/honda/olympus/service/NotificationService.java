@@ -32,11 +32,11 @@ public class NotificationService {
 			ResponseEntity<ResponseVO> responseEntity = restTemplate.postForEntity(notificationURI, requestEntity,
 					ResponseVO.class);
 
-			log.info("Notification sent with Status Code: {}",responseEntity.getStatusCode());
-			log.info("Message: {}",responseEntity.getBody().getMessage());
+			log.debug("Notification sent with Status Code: {}",responseEntity.getStatusCode());
+			log.debug("Message: {}",responseEntity.getBody().getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.info("Error calling Notification service");
+			log.info("MOnitor:: Error calling Notification service");
 		}
 
 	}

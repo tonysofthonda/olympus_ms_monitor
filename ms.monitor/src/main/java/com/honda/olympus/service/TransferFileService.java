@@ -20,8 +20,8 @@ public class TransferFileService {
 
 	public void sendTransferFileEvent(TransferFileVO message) {
 		try {
-			log.info("Calling transferFile service");
-			log.info(message.toString());
+			log.debug("Calling transferFile service");
+			log.debug(message.toString());
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -32,10 +32,10 @@ public class TransferFileService {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(transferFileURI, requestEntity,
 					String.class);
 
-			log.info("TRnasfer file called with Status Code: {}",responseEntity.getStatusCode());
-			log.info("Message: " + responseEntity.getBody());
+			log.debug("Transfer file called with Status Code: {}",responseEntity.getStatusCode());
+			log.debug("Message: " + responseEntity.getBody());
 		} catch (Exception e) {
-			log.info("Error calling transferFile service {}",e.getLocalizedMessage());
+			log.info("Monitor:: Error calling transferFile service {}",e.getLocalizedMessage());
 		}
 
 	}
