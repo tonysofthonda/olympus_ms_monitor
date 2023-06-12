@@ -14,6 +14,7 @@ import com.honda.olympus.exception.MonitorException;
 import com.honda.olympus.service.MonitorService;
 import com.honda.olympus.vo.ResponseVO;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,11 +35,12 @@ public class MonitorController {
 	@Autowired
 	private MonitorService monitorService;
 
+	@Operation(summary = "Force Monitor execute once")
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseVO> monitorFiles() throws MonitorException, IOException {
 		
 		try {
-		log.info("Calling FORCE monitor event:: start");
+		log.info("Monitor:: Calling FORCE monitor event:: start");
 
 		monitorService.checkFiles();
 
