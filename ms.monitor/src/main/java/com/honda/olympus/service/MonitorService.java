@@ -13,6 +13,8 @@ import com.honda.olympus.utils.MonitorConstants;
 import com.honda.olympus.vo.EventVO;
 import com.honda.olympus.vo.MessageVO;
 import com.honda.olympus.vo.TransferFileVO;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.JSchException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,31 +69,33 @@ public class MonitorService {
 
 			if (ftpClient.listFiles()) {
 
-				//ftpClient.listDirectories();
-
-				FTPFile ftpFile = ftpClient.listFirstFile(serviceName);
+				LsEntry ftpFile = ftpClient.listFirstFile(serviceName);
 
 			
 				log.debug("First file: {}",ftpClient.listFirstFile(serviceName));
 
 				if (ftpFile != null) {
 					log.info("Monitor:: Existe archivo en MFTP");
-					event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "SUCCESS", ftpFile.getName());
+					event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "SUCCESS", ftpFile.getFilename());
 					logEventService.sendLogEvent(event);
 
-					TransferFileVO transeferMessage = new TransferFileVO(1L, "SUCCESS", ftpFile.getName());
+					TransferFileVO transeferMessage = new TransferFileVO(1L, "SUCCESS", ftpFile.getFilename());
 
 					transferFileService.sendTransferFileEvent(transeferMessage);
+				}else {
+					log.info("Monitor:: NO Existen archivos en MFTP: {}", host);
+					event = new EventVO(serviceName, MonitorConstants.THREE_STATUS, "No existen archivos para procesar", "");
+					logEventService.sendLogEvent(event);
 				}
 			} else {
 
-				log.info("No existen archivos para procesar");
+				log.info("Monitor:: NO Existen archivos en MFTP: {}", host);
 				event = new EventVO(serviceName, MonitorConstants.THREE_STATUS, "No existen archivos para procesar", "");
 				logEventService.sendLogEvent(event);
 
 			}
 
-		} catch (IOException e) {
+		} catch (MonitorException e) {
 
 			log.info("Fallo en la conexión al MFTP: {}",host);
 			event = new EventVO(serviceName, MonitorConstants.ZERO_STATUS, "Fallo en la conexión al MFTP: " + host, "");

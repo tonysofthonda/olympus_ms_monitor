@@ -1,14 +1,19 @@
 package com.honda.olympus.ftp.client;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Vector;
+import java.util.regex.Pattern;
 
-import org.apache.commons.net.PrintCommandListener;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
+import com.honda.olympus.exception.MonitorException;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,16 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 public class FtpClient {
 
 	private String server;
-
 	private Integer port;
-
 	private String user;
-
 	private String password;
-
 	private String workDir;
-
-	private FTPClient ftp;
+	private Channel channel = null;
+	private ChannelSftp channelSftp = null;
 
 	public FtpClient(String server, Integer port, String user, String password, String workDir) {
 		super();
@@ -36,62 +37,65 @@ public class FtpClient {
 		this.workDir = workDir;
 	}
 
-	public void connect() throws IOException {
-		ftp = new FTPClient();
+	public void connect() throws MonitorException {
 
-		log.debug("Connection FTP server: {}", server);
+		try {
+			String pass = this.password;
+			JSch jsch = new JSch();
+			Session session = jsch.getSession(this.user,this.server, this.port);
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.setPassword(pass);
+			session.connect();
+			log.debug("Connection established.");
+			log.debug("Creating SFTP Channel.");
 
-		// log.info("port: " + port);
-		// log.info("user: " + user);
-		log.debug("workDir: {}", workDir);
+			channel = session.openChannel("sftp");
+			channel.connect();
 
-		//ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
+		} catch (JSchException e4) {
+			log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
 
-		ftp.connect(server, port);
-		// ftp.connect(server);
+			throw new MonitorException(e4.getLocalizedMessage());
 
-		int reply = ftp.getReplyCode();
-		if (!FTPReply.isPositiveCompletion(reply)) {
-			ftp.disconnect();
-			throw new IOException("Exception in connecting to FTP Server");
-		}
-
-		ftp.enterLocalPassiveMode();
-
-		ftp.login(user, password);
-
-	}
-
-	public boolean listFiles() throws IOException {
-		FTPFile[] files = ftp.listFiles(workDir);
-
-		if (files.length != 0) {
-
-			Arrays.stream(files).forEach(f -> log.info("Files: {}", f.getName()));
-			return Boolean.TRUE;
-
-		} else {
-			return Boolean.FALSE;
 		}
 	}
 
-	public boolean listDirectories() throws IOException {
-		FTPFile[] files = ftp.listDirectories("/");
+	public boolean listFiles() throws MonitorException {
+		try {
+			ArrayList<LsEntry> files;
 
-		if (files.length != 0) {
+			this.channelSftp = (ChannelSftp) channel;
+			this.channelSftp.cd(this.workDir);
+			Vector<LsEntry> filelist = channelSftp.ls(this.workDir);
 
-			Arrays.stream(files).forEach(f -> log.info("Directories: {}", f.getName()));
-			return Boolean.TRUE;
+			files = new ArrayList<LsEntry>(filelist);	
 
-		} else {
-			return Boolean.FALSE;
+			if (filelist.size() != 0) {
+
+				files.forEach(f -> log.debug("File name: {}, Is file: {}", f.getFilename(),Pattern.matches("^[\\w,\\s-]+\\.[A-Za-z]{3}$",f.getFilename())));
+				return Boolean.TRUE;
+
+			} else {
+				return Boolean.FALSE;
+			}
+		} catch (SftpException e4) {
+			log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
+			throw new MonitorException(e4.getLocalizedMessage());
 		}
 	}
 
-	public FTPFile listFirstFile(String serviceName) throws IOException {
-		FTPFile[] files = ftp.listFiles(workDir);
+	public LsEntry listFirstFile(String serviceName) throws MonitorException {
+		
+		try {
+		ArrayList<LsEntry> files;
 
-		Optional<FTPFile> ftpFile = Arrays.stream(files).findFirst();
+		this.channelSftp = (ChannelSftp) channel;
+		this.channelSftp.cd(this.workDir);
+		Vector<LsEntry> filelist = channelSftp.ls(this.workDir);
+
+		files = new ArrayList<LsEntry>(filelist);
+
+		Optional<LsEntry> ftpFile = files.stream().filter( f ->  Pattern.matches("^[\\w,\\s-]+\\.[A-Za-z]{3}$",f.getFilename())).findFirst();
 
 		if (ftpFile.isPresent()) {
 			return ftpFile.get();
@@ -99,10 +103,16 @@ public class FtpClient {
 
 			return null;
 		}
+		
+	} catch (SftpException e4) {
+		log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
+		throw new MonitorException(e4.getLocalizedMessage());
+
+	}
 
 	}
 
 	public void close() throws IOException {
-		ftp.disconnect();
+		this.channel.disconnect();
 	}
 }
