@@ -27,6 +27,7 @@ public class FtpClient {
 	private String workDir;
 	private Channel channel = null;
 	private ChannelSftp channelSftp = null;
+	private Session session = null;
 
 	public FtpClient(String server, Integer port, String user, String password, String workDir) {
 		super();
@@ -42,18 +43,18 @@ public class FtpClient {
 		try {
 			String pass = this.password;
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(this.user,this.server, this.port);
-			session.setConfig("StrictHostKeyChecking", "no");
-			session.setPassword(pass);
-			session.connect();
+			this.session = jsch.getSession(this.user,this.server, this.port);
+			this.session.setConfig("StrictHostKeyChecking", "no");
+			this.session.setPassword(pass);
+			this.session.connect();
 			log.debug("Connection established.");
 			log.debug("Creating SFTP Channel.");
 
-			channel = session.openChannel("sftp");
-			channel.connect();
+			this.channel = this.session.openChannel("sftp");
+			this.channel.connect();
 
 		} catch (JSchException e4) {
-			log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
+			log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
 
 			throw new MonitorException(e4.getLocalizedMessage());
 
@@ -64,9 +65,9 @@ public class FtpClient {
 		try {
 			ArrayList<LsEntry> files;
 
-			this.channelSftp = (ChannelSftp) channel;
+			this.channelSftp = (ChannelSftp) this.channel;
 			this.channelSftp.cd(this.workDir);
-			Vector<LsEntry> filelist = channelSftp.ls(this.workDir);
+			Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
 
 			files = new ArrayList<LsEntry>(filelist);	
 
@@ -79,7 +80,7 @@ public class FtpClient {
 				return Boolean.FALSE;
 			}
 		} catch (SftpException e4) {
-			log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
+			log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
 			throw new MonitorException(e4.getLocalizedMessage());
 		}
 	}
@@ -89,9 +90,9 @@ public class FtpClient {
 		try {
 		ArrayList<LsEntry> files;
 
-		this.channelSftp = (ChannelSftp) channel;
+		this.channelSftp = (ChannelSftp) this.channel;
 		this.channelSftp.cd(this.workDir);
-		Vector<LsEntry> filelist = channelSftp.ls(this.workDir);
+		Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
 
 		files = new ArrayList<LsEntry>(filelist);
 
@@ -105,14 +106,19 @@ public class FtpClient {
 		}
 		
 	} catch (SftpException e4) {
-		log.info("Exception ocurred due to: {} ",e4.getLocalizedMessage());
+		log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
 		throw new MonitorException(e4.getLocalizedMessage());
 
+	}finally{
+		this.channelSftp.exit();
 	}
 
 	}
 
 	public void close() throws IOException {
+		this.channelSftp.disconnect();
 		this.channel.disconnect();
+		this.session.disconnect();
+		log.info("Monitor:: SFTP channel & session disconnected");
 	}
 }

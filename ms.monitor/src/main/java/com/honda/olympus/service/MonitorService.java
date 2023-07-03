@@ -72,7 +72,7 @@ public class MonitorService {
 				LsEntry ftpFile = ftpClient.listFirstFile(serviceName);
 
 			
-				log.debug("First file: {}",ftpClient.listFirstFile(serviceName));
+				log.debug("Monitor:: First file: {}",ftpFile);
 
 				if (ftpFile != null) {
 					log.info("Monitor:: Existe archivo en MFTP");
