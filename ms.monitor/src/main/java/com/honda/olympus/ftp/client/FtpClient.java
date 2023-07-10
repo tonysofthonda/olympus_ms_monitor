@@ -2,9 +2,11 @@ package com.honda.olympus.ftp.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.honda.olympus.exception.MonitorException;
 import com.jcraft.jsch.Channel;
@@ -20,105 +22,106 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FtpClient {
 
-	private String server;
-	private Integer port;
-	private String user;
-	private String password;
-	private String workDir;
-	private Channel channel = null;
-	private ChannelSftp channelSftp = null;
-	private Session session = null;
+    private String server;
+    private Integer port;
+    private String user;
+    private String password;
+    private String workDir;
+    private Channel channel = null;
+    private ChannelSftp channelSftp = null;
+    private Session session = null;
 
-	public FtpClient(String server, Integer port, String user, String password, String workDir) {
-		super();
-		this.server = server;
-		this.port = port;
-		this.user = user;
-		this.password = password;
-		this.workDir = workDir;
-	}
+    public FtpClient(String server, Integer port, String user, String password, String workDir) {
+        super();
+        this.server = server;
+        this.port = port;
+        this.user = user;
+        this.password = password;
+        this.workDir = workDir;
+    }
 
-	public void connect() throws MonitorException {
+    public void connect() throws MonitorException {
 
-		try {
-			String pass = this.password;
-			JSch jsch = new JSch();
-			this.session = jsch.getSession(this.user,this.server, this.port);
-			this.session.setConfig("StrictHostKeyChecking", "no");
-			this.session.setPassword(pass);
-			this.session.connect();
-			log.debug("Connection established.");
-			log.debug("Creating SFTP Channel.");
+        try {
+            String pass = this.password;
+            JSch jsch = new JSch();
+            this.session = jsch.getSession(this.user, this.server, this.port);
+            this.session.setConfig("StrictHostKeyChecking", "no");
+            this.session.setPassword(pass);
+            this.session.connect();
+            log.debug("Connection established.");
+            log.debug("Creating SFTP Channel.");
 
-			this.channel = this.session.openChannel("sftp");
-			this.channel.connect();
+            this.channel = this.session.openChannel("sftp");
+            this.channel.connect();
 
-		} catch (JSchException e4) {
-			log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
+        } catch (JSchException e4) {
+            log.info("Monitor:: Exception ocurred due to: {} ", e4.getLocalizedMessage());
 
-			throw new MonitorException(e4.getLocalizedMessage());
+            throw new MonitorException(e4.getLocalizedMessage());
 
-		}
-	}
+        }
+    }
 
-	public boolean listFiles() throws MonitorException {
-		try {
-			ArrayList<LsEntry> files;
+    public boolean listFiles(String filer) throws MonitorException {
+        try {
+            ArrayList<LsEntry> files;
 
-			this.channelSftp = (ChannelSftp) this.channel;
-			this.channelSftp.cd(this.workDir);
-			Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
+            this.channelSftp = (ChannelSftp) this.channel;
+            this.channelSftp.cd(this.workDir);
+            Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
 
-			files = new ArrayList<LsEntry>(filelist);	
+            files = new ArrayList<>(filelist);
 
-			if (filelist.size() != 0) {
+            if (!filelist.isEmpty()) {
 
-				files.forEach(f -> log.debug("File name: {}, Is file: {}", f.getFilename(),Pattern.matches("^[\\w,\\s-]+\\.[A-Za-z]{3}$",f.getFilename())));
-				return Boolean.TRUE;
+                List<LsEntry> filteredFiles = files.stream()
+                        .filter(f -> f.getFilename().startsWith(filer))
+                        .collect(Collectors.toList());
 
-			} else {
-				return Boolean.FALSE;
-			}
-		} catch (SftpException e4) {
-			log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
-			throw new MonitorException(e4.getLocalizedMessage());
-		}
-	}
+                filteredFiles.forEach(f -> log.debug("File name: {}, Is file: {}", f.getFilename(), Pattern.matches("^[\\w,\\s-]+\\.[A-Za-z]{3}$", f.getFilename())));
+                return Boolean.TRUE;
 
-	public LsEntry listFirstFile(String serviceName) throws MonitorException {
-		
-		try {
-		ArrayList<LsEntry> files;
+            } else {
+                return Boolean.FALSE;
+            }
+        } catch (SftpException e4) {
+            log.info("Monitor:: Exception ocurred due to: {} ", e4.getLocalizedMessage());
+            throw new MonitorException(e4.getLocalizedMessage());
+        }
+    }
 
-		this.channelSftp = (ChannelSftp) this.channel;
-		this.channelSftp.cd(this.workDir);
-		Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
+    public LsEntry listFirstFile(String serviceName, String filer) throws MonitorException {
 
-		files = new ArrayList<LsEntry>(filelist);
+        try {
+            ArrayList<LsEntry> files;
 
-		Optional<LsEntry> ftpFile = files.stream().filter( f ->  Pattern.matches("^[\\w,\\s-]+\\.[A-Za-z]{3}$",f.getFilename())).findFirst();
+            this.channelSftp = (ChannelSftp) this.channel;
+            this.channelSftp.cd(this.workDir);
+            Vector<LsEntry> filelist = this.channelSftp.ls(this.workDir);
 
-		if (ftpFile.isPresent()) {
-			return ftpFile.get();
-		} else {
+            files = new ArrayList<>(filelist);
 
-			return null;
-		}
-		
-	} catch (SftpException e4) {
-		log.info("Monitor:: Exception ocurred due to: {} ",e4.getLocalizedMessage());
-		throw new MonitorException(e4.getLocalizedMessage());
+            Optional<LsEntry> ftpFile = files.stream()
+                    .filter(f -> f.getFilename().startsWith(filer))
+                    .collect(Collectors.toList()).stream().findFirst();
 
-	}finally{
-		this.channelSftp.exit();
-	}
+            return ftpFile.orElse(null);
 
-	}
+        } catch (SftpException e4) {
+            log.info("Monitor:: Exception ocurred due to: {} ", e4.getLocalizedMessage());
+            throw new MonitorException(e4.getLocalizedMessage());
 
-	public void close() throws IOException {
-		this.channelSftp.disconnect();
-		this.channel.disconnect();
-		this.session.disconnect();
-		log.info("Monitor:: SFTP channel & session disconnected");
-	}
+        } finally {
+            this.channelSftp.exit();
+        }
+
+    }
+
+    public void close() throws IOException {
+        this.channelSftp.disconnect();
+        this.channel.disconnect();
+        this.session.disconnect();
+        log.info("Monitor:: SFTP channel & session disconnected");
+    }
 }

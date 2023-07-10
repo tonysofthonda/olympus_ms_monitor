@@ -52,9 +52,12 @@ public class MonitorService {
 	@Value("${mftp.credentials.host}")
 	private String host;
 
+	@Value("${app.file.filter}")
+	private String filter;
+
 	public void checkFiles() throws MonitorException,IOException {
-		
-		
+
+
 
 		FtpClient ftpClient = new FtpClient(server, port, user, password, inBound);
 		EventVO event;
@@ -67,11 +70,11 @@ public class MonitorService {
 			event = new EventVO(serviceName, MonitorConstants.ONE_STATUS, "Conexión al MFTP: " + host, " fué exitosa");
 			logEventService.sendLogEvent(event);
 
-			if (ftpClient.listFiles()) {
+			if (ftpClient.listFiles(filter)) {
 
-				LsEntry ftpFile = ftpClient.listFirstFile(serviceName);
+				LsEntry ftpFile = ftpClient.listFirstFile(serviceName, filter);
 
-			
+
 				log.debug("Monitor:: First file: {}",ftpFile);
 
 				if (ftpFile != null) {
@@ -109,9 +112,9 @@ public class MonitorService {
 		} finally {
 			ftpClient.close();
 		}
-		
 
-		
+
+
 
 	}
 
